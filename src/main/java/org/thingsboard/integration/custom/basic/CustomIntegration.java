@@ -38,6 +38,7 @@ import org.thingsboard.integration.custom.message.MsgType;
 import org.thingsboard.integration.custom.util.CustomMessageConverter;
 
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -77,8 +78,9 @@ public class CustomIntegration extends AbstractIntegration<CustomIntegrationMsg>
                     socketChannel.pipeline().addLast(new SimpleChannelInboundHandler<byte[]>() {
                         @Override
                         protected void channelRead0(ChannelHandlerContext ctx, byte[] msg) {
+                            log.trace("Server received the message: {}", Arrays.toString(msg));
                             CustomIntegrationMsg message = messageConverter.convertMsg(msg);
-                            log.debug("Server received the message: {}", message);
+                            log.debug("Server converted the message: {}", message);
 
                             if (!message.getImei().equals(NULL_DEVICE_IMEI)) {
                                 if (message.getMsgType() == MsgType.REGISTRATION) {
