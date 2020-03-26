@@ -1,9 +1,9 @@
 package org.thingsboard.integration.custom.util;
 
-public class Converter {
+public class ByteConverter {
 
     public static String BcdToString(byte bcd) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
 
         byte high = (byte) (bcd & 0xf0);
         high >>>= (byte) 4;
@@ -18,10 +18,10 @@ public class Converter {
 
     public static String BcdToString(byte[] bcd) {
 
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
 
-        for (int i = 0; i < bcd.length; i++) {
-            sb.append(BcdToString(bcd[i]));
+        for (byte b : bcd) {
+            sb.append(BcdToString(b));
         }
 
         return sb.toString();
