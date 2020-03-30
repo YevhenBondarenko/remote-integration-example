@@ -38,7 +38,7 @@
         <grpc.version>1.22.1</grpc.version>
         <winsw.version>2.0.1</winsw.version>
         <netty.version>4.1.37.Final</netty.version>
-        <pkg.name>tb-remote-integration-example</pkg.name>
+        <pkg.name>tb-remote-integration</pkg.name>
         <pkg.user>thingsboard</pkg.user>
         <pkg.unixLogFolder>/var/log/${pkg.name}</pkg.unixLogFolder>
         <pkg.installFolder>/usr/share/${pkg.name}</pkg.installFolder>

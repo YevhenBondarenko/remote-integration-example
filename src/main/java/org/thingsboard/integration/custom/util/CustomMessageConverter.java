@@ -23,6 +23,7 @@ import org.thingsboard.integration.custom.message.MsgData;
 import org.thingsboard.integration.custom.message.MsgType;
 import org.thingsboard.integration.custom.message.Unit;
 
+import java.nio.ByteBuffer;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -45,7 +46,21 @@ public class CustomMessageConverter {
             return new CustomIntegrationMsg(id, imei, name, msgType, null);
         }
 
-        return new CustomIntegrationMsg(id, imei, name, msgType, convertMsgBody(Arrays.copyOfRange(data, 40, data.length)));
+        ByteBuffer wrapped = ByteBuffer.wrap(Arrays.copyOfRange(data, 38, 40));
+        int bodyLength = wrapped.getShort();
+
+        byte[] body = Arrays.copyOfRange(data, 40, data.length);
+        int currentBodyLength = body.length;
+
+
+        if (bodyLength != currentBodyLength) {
+            log.warn("Expected body length: {}, but current body length: {}", bodyLength, currentBodyLength);
+
+            int newBodyLength = currentBodyLength - (currentBodyLength - 10) % 4;
+            body = Arrays.copyOfRange(body, 0, newBodyLength);
+        }
+
+        return new CustomIntegrationMsg(id, imei, name, msgType, convertMsgBody(body));
     }
 
     private MsgBody convertMsgBody(byte[] msgBody) {
@@ -68,7 +83,7 @@ public class CustomMessageConverter {
             msgDataList.add(convertData(dataGroup));
         }
 
-        return new MsgBody(msgDataList, ts, detectingInterval, batteryVolume, signalStrength);
+        return new MsgBody(ts, detectingInterval, batteryVolume, signalStrength, msgDataList);
     }
 
     private MsgData convertData(String data) {
@@ -132,4 +147,9 @@ public class CustomMessageConverter {
         return new MsgData(dataStatus, unit, value);
     }
 
+
+    public static void main(String[] args) {
+
+        System.out.println(new String(new byte[]{65, 84, 43, 67, 73, 80, 83, 72, 85, 84, 13}));
+    }
 }

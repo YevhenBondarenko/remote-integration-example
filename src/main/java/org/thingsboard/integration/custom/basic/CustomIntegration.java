@@ -56,6 +56,7 @@ public class CustomIntegration extends AbstractIntegration<CustomIntegrationMsg>
     private NioEventLoopGroup workGroup;
     private Channel serverChannel;
     private static final String NULL_DEVICE_IMEI = "0000000000000000";
+    private static final int MIN_MSG_LENGTH = 40;
     private final CustomMessageConverter messageConverter = new CustomMessageConverter();
 
     private static final byte[] firstResponsePart = new byte[]{0x2B, 0x54, 0x4F, 0x50, 0x53, 0x41, 0x49, 0x4C};
@@ -78,20 +79,24 @@ public class CustomIntegration extends AbstractIntegration<CustomIntegrationMsg>
                     socketChannel.pipeline().addLast(new SimpleChannelInboundHandler<byte[]>() {
                         @Override
                         protected void channelRead0(ChannelHandlerContext ctx, byte[] msg) {
-                            log.trace("Server received the message: {}", Arrays.toString(msg));
-                            CustomIntegrationMsg message = messageConverter.convertMsg(msg);
-                            log.debug("Server converted the message: {}", message);
-
-                            if (!message.getImei().equals(NULL_DEVICE_IMEI)) {
-                                if (message.getMsgType() == MsgType.REGISTRATION) {
-                                    log.info("[{}] Device is connected.", message.getImei());
-                                } else {
-                                    process(message);
-                                }
-                                ctx.writeAndFlush(createResponse());
+                            if (msg.length < MIN_MSG_LENGTH) {
+                                log.error("Unknown message: {}", Arrays.toString(msg));
                             } else {
-                                log.info("ALL DEVICES CONNECTED.");
+                                log.trace("Server received the message: {}", Arrays.toString(msg));
+                                CustomIntegrationMsg message = messageConverter.convertMsg(msg);
+                                log.debug("Server converted the message: {}", message);
+
+                                if (!message.getImei().equals(NULL_DEVICE_IMEI)) {
+                                    if (message.getMsgType() == MsgType.REGISTRATION) {
+                                        log.info("[{}] Device is connected.", message.getImei());
+                                    } else {
+                                        process(message);
+                                    }
+                                } else {
+                                    log.info("ALL DEVICES CONNECTED.");
+                                }
                             }
+                            ctx.writeAndFlush(createResponse());
                         }
                     });
                 }
